@@ -1,0 +1,79 @@
+clc
+clear
+close all
+
+load LFP_data.mat % load your LFP data
+cycle = 3; % number of wavelet cycle
+f0 = 15; % center frequency in Hz
+%%
+% bootstrap
+bt_size = size(LFP_data,1); % Number of trials
+bt_size1 = round(0.8.*(bt_size)); % 80% of trials
+n_bt = 100; % number of bootstrap
+%%
+% itc mapping
+[itc_data,cmphase] = itc_map3(LFP_data,cycle);
+
+%% itc calculation
+for i = 1:n_bt
+    perm = randperm(bt_size,bt_size1);
+    [itcfi,cmfi] = itc_map2(LFP_data(perm(1:bt_size1),:),f0,cycle);
+    itc1 (i,:) = itcfi;
+end
+ITC = mean(itc1);
+%% threshhold calculation
+% seperate thresholds
+% shuffling fix in
+data_th1 =  cmphase{1,f0}; % data for shuffling
+[m,n] = size(data_th1) ;
+n_perm = 1000;
+for j=1:n_perm
+    idx = randperm(n) ;
+    for i=1:m
+        b_th1(i,:) = data_th1(i,idx);
+    end
+    itc_shuffle = mean((b_th1));
+    ITC_shuffeled(j,:) = abs(itc_shuffle);
+    mmm = mean(data_th1);
+    mmmm(j,:) = abs(mmm);
+end
+
+
+%% baseline adjustment
+ITC = ITC-mean(ITC(1,1:30));
+ITC_shuffeled(:,:) = ITC_shuffeled(:,:)-mean(mean(ITC_shuffeled(:,1:30)));
+
+%% significancy test
+alpha = 0.001;
+for k=1:size(data_th1,2)
+    [p_null(k),hp(k)] = signrank(squeeze(ITC_shuffeled(:,k)),ITC(1,k),'Alpha',alpha,'tail','left');
+end
+
+zz = (p_null-alpha);
+for i = 1:size(data_th1,2)
+    if i>0 && i<150 && zz(1,i)<0 && zz(1,i+1)<0 && zz(1,i+2)<0 && zz(1,i+3)<0 && zz(1,i+4)<0 && zz(1,i+5)<0 && zz(1,i+6)<0 && zz(1,i+7)<0 && zz(1,i+8)<0 && zz(1,i+9)<0 && zz(1,i+10)<0 && zz(1,i+11)<0 && zz(1,i+12)<0 && zz(1,i+13)<0 && zz(1,i+14)<0 && zz(1,i+15)<0 && zz(1,i+16)<0 && zz(1,i+17)<0 && zz(1,i+18)<0 && zz(1,i+19)<0  && zz(1,i+20)<0
+        bb1=i;
+        break
+    else
+        bb1 = 1;
+    end
+end
+
+
+%% baseline correction
+itc1 = itc1-mean(mean(itc1(:,1:30)));
+figure;
+shadedErrorBar(-30:1:200,mean(itc1,1),3*std(itc1)/sqrt(size(itc1,1)),'lineprops','r');
+hold on
+plot(bb1-31,ITC(1,bb1),'r*','linewidth',4)
+shadedErrorBar(-30:1:200,mean(ITC_shuffeled,1),3*std(ITC_shuffeled)/sqrt(size(ITC_shuffeled,1)),'lineprops','c');
+hold on
+xline(0,'--k','linewidth',2)
+xlabel('Time(ms)')
+ylabel('Adjusted ITC')
+title ('Inter Trial Phase Coherence')
+legend('','','','ITC','','','','','Threshold')
+set(gca,'FontSize',12,'fontname','Times')
+xlim([-30 200])
+xticks(-30:15:200);
+xticklabels({'-30','-15','0','15','30','45','60','75','90','105','120','135','150','165','180','195'});
