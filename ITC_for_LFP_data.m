@@ -28,7 +28,7 @@ data_th1 =  cmphase{1,f0}; % data for shuffling
 [m,n] = size(data_th1) ;
 n_perm = 1000;
 for j=1:n_perm
-    idx = randperm(n) ;
+    idx = randperm(n);
     for i=1:m
         b_th1(i,:) = data_th1(i,idx);
     end
@@ -49,10 +49,10 @@ end
 zz = (p_null-alpha);
 for i = 1:size(data_th1,2)
     if i>0 && i<150 && zz(1,i)<0 && zz(1,i+1)<0 && zz(1,i+2)<0 && zz(1,i+3)<0 && zz(1,i+4)<0 && zz(1,i+5)<0 && zz(1,i+6)<0 && zz(1,i+7)<0 && zz(1,i+8)<0 && zz(1,i+9)<0 && zz(1,i+10)<0 && zz(1,i+11)<0 && zz(1,i+12)<0 && zz(1,i+13)<0 && zz(1,i+14)<0 && zz(1,i+15)<0 && zz(1,i+16)<0 && zz(1,i+17)<0 && zz(1,i+18)<0 && zz(1,i+19)<0  && zz(1,i+20)<0
-        bb1=i;
+        EIT=i;
         break
     else
-        bb1 = 1;
+        EIT = 1;
     end
 end
 
@@ -61,7 +61,7 @@ end
 figure;
 shadedErrorBar(-30:1:200,mean(itc1,1),3*std(itc1)/sqrt(size(itc1,1)),'lineprops','r');
 hold on
-plot(bb1-31,ITC(1,bb1),'r*','linewidth',4)
+plot(EIT-31,ITC(1,EIT),'r*','linewidth',4)
 shadedErrorBar(-30:1:200,mean(ITC_shuffeled,1),3*std(ITC_shuffeled)/sqrt(size(ITC_shuffeled,1)),'lineprops','c');
 hold on
 xline(0,'--k','linewidth',2)
